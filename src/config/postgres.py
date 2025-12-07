@@ -11,5 +11,6 @@ class PostgreSQL(BaseSettings):
     PASSWORD: str
     DRIVER: str = "asyncpg"
 
+    @property
     def get_url(self):
         return f"postgresql+{self.DRIVER}://{self.USERNAME}:{self.PASSWORD}@{self.HOST}:{self.PORT}/{self.DATABASE}"

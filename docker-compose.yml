@@ -3,13 +3,15 @@ services:
   app:
     build: 
       context: .
-      dockerfile: Dockerfile.dev
+      dockerfile: Dockerfile
       target: testing
-    command: uvicorn src.main:app --host=0.0.0.0 --reload
+    command: uvicorn src.application:app --host=0.0.0.0 --reload
     ports:
       - '8000:8000'
     volumes:
       - ./src:/app/src/
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
     env_file:
       - ./.env
     depends_on:
@@ -17,13 +19,15 @@ services:
     restart: always
 
   db:
-    image: postgres:18
+    image: postgres:17.4
     container_name: db
     restart: always
-    env_file:
-      - ./.env
+    environment:
+      - POSTGRES_USER=${POSTGRESQL__USERNAME}
+      - POSTGRES_PASSWORD=${POSTGRESQL__PASSWORD}
+      - POSTGRES_DB=${POSTGRESQL__DATABASE}
     ports:
-      - "5432:5432"
+      - "${POSTGRESQL__PORT}:${POSTGRESQL__PORT}"
     volumes:
       - devdb-volume:/var/lib/postgresql/data
 

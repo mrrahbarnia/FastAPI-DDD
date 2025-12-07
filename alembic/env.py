@@ -7,12 +7,19 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 
+from src.modules.book.adapters import orm
+from src.config.postgres import PostgreSQL
+
 config = context.config
+
+pg_cfg = PostgreSQL()  # type: ignore
+
+config.set_main_option("sqlalchemy.url", pg_cfg.get_url)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-target_metadata = None
+target_metadata = orm.BaseModel.metadata
 
 
 def run_migrations_offline() -> None:
