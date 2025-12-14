@@ -3,13 +3,13 @@ from dataclasses import dataclass
 from src.common import types
 
 
-@dataclass
+@dataclass(frozen=True)
 class BookBorrowed(types.Event):
     id: types.BookID
     title: str
 
 
-@dataclass
+@dataclass(frozen=True)
 class BookReturned(types.Event):
     id: types.BookID
     title: str

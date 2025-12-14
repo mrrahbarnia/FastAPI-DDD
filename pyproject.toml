@@ -12,4 +12,5 @@ dependencies = [
     "pydantic>=2.12.4",
     "sqlalchemy[asyncio]>=2.0.44",
     "uvicorn>=0.38.0",
+    "punq>=0.7.0",
 ]

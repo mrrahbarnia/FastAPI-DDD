@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends
 
 from . import schemas
-from .dependencies import get_uow
+from ..dependencies import get_uow
 from ...service import use_cases, exceptions as service_exc
 from ...service.unit_of_work import SqlAlchemyUnitOfWork
 from ...domain.models import BookAlreadyBorrowedExc, BookNotBorrowedExc
