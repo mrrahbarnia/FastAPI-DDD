@@ -22,7 +22,6 @@ class Book:
     id: types.BookID
     title: str
     status: BookStatusEnum
-    events: list[types.Event] = field(default_factory=list)
     borrow_count: int = 0
 
     @staticmethod
@@ -41,5 +40,3 @@ class Book:
             raise BookNotBorrowedExc
 
         self.status = BookStatusEnum.AVAILABLE
-
-        self.events.append(events.BookReturned(id=self.id, title=self.title))
