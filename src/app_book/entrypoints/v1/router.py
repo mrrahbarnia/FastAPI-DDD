@@ -1,16 +1,57 @@
 from typing import Annotated
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Query
+
+from sqlalchemy.ext.asyncio import AsyncConnection
 
 from . import schemas, http_exceptions
 from .http_response import HTTPResponse
-from ..dependencies import get_uow
+from ..dependencies import get_uow, get_session
+from ... import queries
 from ...service import use_cases, exceptions as service_exc
 from ...service.unit_of_work import SqlAlchemyUnitOfWork
 from ...domain.models import BookAlreadyBorrowedExc, BookNotBorrowedExc
-
 from src.manager.common.types import BookID
+from src.manager.common.pagination_schema import (
+    PaginationResponse,
+    PaginationResponseSchema,
+)
 
 app = APIRouter(prefix="/v1/books", tags=["books"])
+
+
+@app.get(
+    "",
+    status_code=status.HTTP_200_OK,
+    response_model=PaginationResponseSchema[list[schemas.BookRead]],
+)
+async def get_books(
+    session: Annotated[AsyncConnection, get_session],
+    query_params: Annotated[schemas.BookListQueryParams, Query()],
+) -> PaginationResponseSchema[list[schemas.BookRead]]:
+    limit, offset = query_params.to_limit_offset()
+    rows, count = await queries.get_books(
+        session=session,
+        limit=limit,
+        offset=offset,
+        sort_mode=query_params.sort_mode,
+        title__icontain=query_params.title__icontain,
+    )
+    return PaginationResponseSchema[list[schemas.BookRead]](
+        pagination=PaginationResponse(
+            current_page=query_params.current_page,
+            page_size=query_params.page_size,
+            total=count if count else 0,
+        ),
+        data=[
+            schemas.BookRead(
+                id=row.id,
+                title=row.title,
+                status=row.status,
+                borrow_count=row.borrow_count,
+            )
+            for row in rows
+        ],
+    )
 
 
 @app.post(
