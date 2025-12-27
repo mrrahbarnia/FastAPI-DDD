@@ -2,6 +2,7 @@ from fastapi import FastAPI
 
 from src.manager.config import ENVS
 from src.manager.common.types import Environment
+from .lifespan import lifespan
 
 
 app: FastAPI = FastAPI(
@@ -17,4 +18,5 @@ app: FastAPI = FastAPI(
     redoc_url=None
     if ENVS.ENVIRONMENT == Environment.PRODUCTION
     else ENVS.FASTAPI.REDOC_URL,
+    lifespan=lifespan,
 )

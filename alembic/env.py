@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 from alembic import context
 
 from src.manager.config import ENVS
-from src.manager.adapters.orm import BaseModel
+from src.infrastructure.adapters.orm import BaseModel
 from src.app_book.adapters import orm as book_orm  # noqa
 
 config = context.config

@@ -11,7 +11,7 @@ from sqlalchemy.ext.asyncio import (
 from ..adapters import repository as repo
 
 from src.manager.config import ENVS
-from src.manager.adapters.repository import (
+from src.infrastructure.adapters.repository import (
     IRepository as EventIRepository,
     SqlAlchemyRepository as EventSqlAlchemyRepository,
 )
