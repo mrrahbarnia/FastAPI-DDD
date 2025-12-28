@@ -8,6 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 class IRepository(Protocol):
     def __init__(self, session: AsyncSession) -> None: ...
     async def add(self, event_type: str, payload: dict) -> None: ...
+    async def fetch_unprocessed(self) -> OutBoxEvent | None: ...
+    async def mark_processed(self, event_id: int) -> None: ...
 
 
 class SqlAlchemyRepository:
@@ -28,7 +30,12 @@ class SqlAlchemyRepository:
             .with_for_update(skip_locked=True)
             .limit(1)
         )
-        return await self.session.scalar(stmt)
+        try:
+            event = await self.session.scalar(stmt)
+        except Exception:
+            return None
+
+        return event
 
     async def mark_processed(self, event_id: int) -> None:
         stmt = (

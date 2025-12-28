@@ -1,15 +1,16 @@
 from typing import Protocol, Self
-from dataclasses import asdict
 
-import orjson
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+)
 
-from ..adapters import repository as repo
-from src.manager.dependencies.container import container
-from events.adapters.repository import (
+from ..adapters.repository import (
     IRepository as EventIRepository,
     SqlAlchemyRepository as EventSqlAlchemyRepository,
 )
+from src.manager.dependencies.container import container
+
 
 async_session_maker: async_sessionmaker[AsyncSession] = container.resolve(
     async_sessionmaker[AsyncSession]
@@ -17,7 +18,6 @@ async_session_maker: async_sessionmaker[AsyncSession] = container.resolve(
 
 
 class IUnitOfWork(Protocol):
-    books: repo.IRepository
     events: EventIRepository
 
     async def __aenter__(self) -> Self: ...
@@ -30,7 +30,6 @@ class IUnitOfWork(Protocol):
 
 
 class SqlAlchemyUnitOfWork:
-    books: repo.IRepository  # These are only for type safety
     events: EventIRepository
 
     def __init__(self, session_maker=async_session_maker) -> None:
@@ -38,7 +37,6 @@ class SqlAlchemyUnitOfWork:
 
     async def __aenter__(self) -> Self:
         session = self.session_maker()
-        self.books = repo.SqlAlchemyRepository(session)
         self.events = EventSqlAlchemyRepository(session)
         self.session = session
         return self
@@ -53,7 +51,6 @@ class SqlAlchemyUnitOfWork:
             if exc_type is not None:
                 await self.rollback()
             else:
-                await self.collect_new_events()
                 await self.commit()
         finally:
             await self.session.close()
@@ -63,18 +60,6 @@ class SqlAlchemyUnitOfWork:
 
     async def commit(self):
         return await self.session.commit()
-
-    async def collect_new_events(self):
-        for book in self.books._seen:
-            while book.events:
-                event = book.events.pop(0)
-
-                payload_bytes = orjson.dumps(asdict(event))  # type: ignore
-                payload_dict = orjson.loads(payload_bytes)
-
-                await self.events.add(
-                    event_type=event.__class__.__name__, payload=payload_dict
-                )
 
 
 class FakeUnitOfWork:

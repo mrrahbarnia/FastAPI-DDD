@@ -2,7 +2,7 @@ from datetime import datetime
 
 import sqlalchemy.orm as so
 from sqlalchemy.orm import DeclarativeBase, MappedAsDataclass
-from sqlalchemy.types import UUID, DateTime
+from sqlalchemy.types import UUID, DateTime, BIGINT
 from sqlalchemy.dialects.postgresql import JSONB
 
 from src.manager.common import types
@@ -17,7 +17,7 @@ class BaseModel(DeclarativeBase, MappedAsDataclass):
 
 class OutBoxEvent(BaseModel):
     __tablename__ = "outbox_events"
-    id: so.Mapped[int] = so.mapped_column(primary_key=True, autoincrement=True)
+    id: so.Mapped[int] = so.mapped_column(BIGINT, primary_key=True, autoincrement=True)
     event_type: so.Mapped[str]
     payload: so.Mapped[dict] = so.mapped_column(JSONB)
     occurred_at: so.Mapped[datetime] = so.mapped_column(default=lambda: datetime.now())

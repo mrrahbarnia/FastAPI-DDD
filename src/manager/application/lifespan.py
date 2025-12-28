@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 
-from src.infrastructure.bootstrap import bootstrap
+from src.events.bootstrap import bootstrap
 
 logger = logging.getLogger(__name__)
 

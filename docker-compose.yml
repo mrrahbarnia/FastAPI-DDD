@@ -17,6 +17,22 @@ services:
     depends_on:
       - db
     restart: always
+  
+  outbox:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      target: testing
+    command: python -m src.events.consumer
+    volumes:
+      - ./src:/app/src/
+      - ./alembic.ini:/app/alembic.ini
+      - ./alembic:/app/alembic
+    env_file:
+      - ./.env
+    depends_on:
+      - db
+    restart: always
 
   db:
     image: postgres:17.4
